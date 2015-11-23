@@ -1,5 +1,5 @@
 ;;; -*- lexical-binding: t -*-
-;;; mesa-mode.el --- major mode for editing MESA inlist files
+;;; mesa-mode.el --- a major mode for editing MESA inlist files
 
 ;; Author: Josiah Schwab <jschwab@gmail.com>
 ;; Keywords: files
@@ -25,6 +25,110 @@
 
 ;;; Code:
 
+(defgroup mesa nil
+  "A major mode for editing MESA inlist files"
+  :prefix "mesa-")
+
+(defcustom mesa-mode-hook nil
+  "Hook to run upon entering `mesa-mode'"
+  :type  'hook
+  :group 'mesa)
+
+(defcustom mesa-mode-before-save-hook nil
+  "Hook to run before saving inlist"
+  :type  'hook
+  :group 'mesa)
+
+
+(defcustom mesa-comment-start-re "[!#]+"
+  "Regexp for start of a comment"
+  :type  'regexp
+  :safe  'stringp
+  :group 'mesa)
+
+(defcustom mesa-comment-line-re (format "^*%s" mesa-comment-start-re)
+  "Regexp for a comment line"
+  :type  'regexp
+  :safe  'stringp
+  :group 'mesa)
+
+(defcustom mesa-namelist-start-re "^[[:blank:]]*&\\([a-zA-Z0-9_]+\\)"
+  "Namelist start regexp, note we only match namelists with a name"
+  :type  'regexp
+  :safe  'stringp
+  :group 'mesa)
+
+(defcustom mesa-namelist-end-re "^[[:blank:]]*/"
+  "Namelist end regexp"
+  :type  'regexp
+  :safe  'stringp
+  :group 'mesa)
+
+;;; Font lock.
+(defvar mesa-namelist-key-re
+  (concat
+   "^[[:blank:]]*"                      ; leading whitespace
+   "\\([a-zA-Z0-9_]*\\)"                ; key
+   "(?[0-9,]?+)?"                       ; (indicies)?
+   "[[:blank:]]*="                      ; equals
+   )
+  "Regexp for matching namelist key")
+
+(defconst mesa-namelist-boolean-keywords
+  '(".true." ".false.")
+  "Namelist boolean keywords.")
+
+(defvar mesa-namelist-value-boolean-re
+  (regexp-opt mesa-namelist-boolean-keywords 'paren)
+  "Regexp for matching namelist value (boolean)")
+
+(defvar mesa-namelist-value-number-re
+  "=[[:blank:]]*\\([0-9\\.eEdD-]+\\)[[:blank:]]*"
+  "Regexp for matching namelist value (number)")
+
+(defconst mesa-font-lock-keywords
+  (list
+
+   ;; highlight the start of each namelist
+   (cons mesa-namelist-start-re '(1 font-lock-function-name-face))
+
+   ;; highlight keys
+   (cons mesa-namelist-key-re '(1 font-lock-variable-name-face))
+
+   ;; highlight values
+   ;; values could be strings, booleans, or numbers
+   ;; strings are taken care of by the syntax tables
+   ;; put booleans in builtin-face
+   (cons mesa-namelist-value-boolean-re '(1 font-lock-builtin-face))
+   ;; put numbers in constant-face
+   (cons mesa-namelist-value-number-re '(1 font-lock-constant-face))
+
+   )
+  "Font lock keywords for namelist files")
+
+;;; Syntax table
+(defvar mesa-mode-syntax-table
+  (let ((st (make-syntax-table)))
+    (modify-syntax-entry ?\! "<"  st) ; ! begins comment
+    (modify-syntax-entry ?\n ">"  st) ; newline ends comment
+    (modify-syntax-entry ?_  "_"  st) ; underscores are in variable names
+    (modify-syntax-entry ?\' "\"" st) ; single quotes are quotes
+    (modify-syntax-entry ?\" "\"" st) ; double quotes are quotes
+    st)
+  "Syntax table used in mesa-mode.")
+
+;;;###autoload
+(define-derived-mode mesa-mode prog-mode "mesa"
+  "A major mode for editing MESA inlist files"
+  :syntax-table mesa-mode-syntax-table
+  :group 'mesa
+
+  ;; font-lock
+  (setq-local font-lock-defaults '(mesa-font-lock-keywords))
+  
+  ;; hooks
+  (add-hook 'before-save-hook 'mesa-mode-before-save-hook nil t)
+  (run-hooks 'mesa-mode-hook))
 
 (provide 'mesa-mode)
 
