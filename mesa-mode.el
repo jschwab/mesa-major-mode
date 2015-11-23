@@ -39,6 +39,25 @@
   :type  'hook
   :group 'mesa)
 
+(defun mesa-mode-indent-line ()
+  "indent the current line"
+  (let ((old-point (point-marker)))
+    (beginning-of-line)
+    (delete-horizontal-space)
+
+    ;; don't indent namelist parts
+    (if (mesa-inside-namelist)
+        (unless
+            (or
+             (re-search-forward mesa-namelist-start-re (line-end-position) t)
+             (re-search-forward mesa-namelist-end-re (line-end-position) t))
+          (insert "  ")))
+
+    (goto-char (marker-position old-point))))
+
+(defun mesa-mode-before-save-hook ()
+  (indent-region (point-min) (point-max))
+  (whitespace-cleanup))
 
 (defcustom mesa-comment-start-re "[!#]+"
   "Regexp for start of a comment"
@@ -63,6 +82,28 @@
   :type  'regexp
   :safe  'stringp
   :group 'mesa)
+
+(defun mesa-inside-namelist ()
+  "Returns t if currently inside a namelist and nil if not"
+  (setq st (save-excursion (re-search-backward mesa-namelist-start-re 0 t)))
+  (setq en (save-excursion (re-search-backward mesa-namelist-end-re 0 t)))
+  (when (not st)
+    (setq st 0))
+  (when (not en)
+    (setq en 0))
+  ( > st en))
+
+;;; Syntax table
+(defvar mesa-mode-syntax-table
+  (let ((st (make-syntax-table)))
+    (modify-syntax-entry ?\! "<"  st) ; ! begins comment
+    (modify-syntax-entry ?\n ">"  st) ; newline ends comment
+    (modify-syntax-entry ?_  "_"  st) ; underscores are in variable names
+    (modify-syntax-entry ?\' "\"" st) ; single quotes are quotes
+    (modify-syntax-entry ?\" "\"" st) ; double quotes are quotes
+    st)
+  "Syntax table used in mesa-mode.")
+
 
 ;;; Font lock.
 (defvar mesa-namelist-key-re
@@ -106,17 +147,6 @@
    )
   "Font lock keywords for namelist files")
 
-;;; Syntax table
-(defvar mesa-mode-syntax-table
-  (let ((st (make-syntax-table)))
-    (modify-syntax-entry ?\! "<"  st) ; ! begins comment
-    (modify-syntax-entry ?\n ">"  st) ; newline ends comment
-    (modify-syntax-entry ?_  "_"  st) ; underscores are in variable names
-    (modify-syntax-entry ?\' "\"" st) ; single quotes are quotes
-    (modify-syntax-entry ?\" "\"" st) ; double quotes are quotes
-    st)
-  "Syntax table used in mesa-mode.")
-
 ;;;###autoload
 (define-derived-mode mesa-mode prog-mode "mesa"
   "A major mode for editing MESA inlist files"
@@ -125,7 +155,11 @@
 
   ;; font-lock
   (setq-local font-lock-defaults '(mesa-font-lock-keywords))
-  
+
+  ;; require strict formatting
+  (setq indent-tabs-mode nil)
+  (set (make-local-variable 'indent-line-function) 'mesa-mode-indent-line)
+
   ;; hooks
   (add-hook 'before-save-hook 'mesa-mode-before-save-hook nil t)
   (run-hooks 'mesa-mode-hook))
