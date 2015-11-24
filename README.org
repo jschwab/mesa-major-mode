@@ -88,14 +88,25 @@ the "right way".
 This is one of the primary motivations for the major-mode.  The inlist
 will be syntax highlighted. By default, the following faces are used.
 
-| Thing                   | Face               |
-|-------------------------+--------------------|
-| comment                 | comment-face       |
-| namelist name           | function-name-face |
-| option (key)            | variable-name-face |
-| option (value, boolean) | builtin-face       |
-| option (value, string)  | string-face        |
-| option (value, number)  | constant-face      |
+| Thing                   | Face                         |
+|-------------------------+------------------------------|
+| comment                 | font-lock-comment-face       |
+| namelist name           | font-lock-function-name-face |
+| option (key)            | font-lock-variable-name-face |
+| option (value, boolean) | font-lock-builtin-face       |
+| option (value, string)  | font-lock-string-face        |
+| option (value, number)  | font-lock-constant-face      |
+
+You can change the colors assigned to each of the faces using emacs'
+built-in customize facilities.
+
+  + Put your cursor on the text you don't like
+  + Do =M-x describe-text-properties=
+  + Click on =font-lock-constant-face= (or similar)
+  + Click on =customize-face=
+  + Click on =[Choose]=
+  + Pick a new color
+  + Click on =[Apply and Save]=
 
 ** Quick access to documentation
 This is the other primary motivation for the major-mode.
