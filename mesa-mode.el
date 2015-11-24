@@ -34,6 +34,12 @@
   :type  'hook
   :group 'mesa)
 
+(defcustom mesa-indent-string
+  "  "
+  "String to use to indent lines; default is two spaces"
+  :type 'string
+  :group 'mesa)
+
 (defcustom mesa-tags-file-path
   "TAGS"
   "Name of the TAGS file inside of your MESA project"
@@ -233,7 +239,7 @@ comment at the end of the line."
             (or
              (re-search-forward mesa-namelist-start-re (line-end-position) t)
              (re-search-forward mesa-namelist-end-re (line-end-position) t))
-          (insert "  ")))
+          (insert mesa-indent-string)))
 
     (goto-char (marker-position old-point))))
 
