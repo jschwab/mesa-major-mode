@@ -278,6 +278,25 @@ comment at the end of the line."
     (setq en 0))
   ( > st en))
 
+(defun mesa-edit-value (&optional arg)
+  (interactive "P")
+  (save-excursion
+    (beginning-of-line)
+    (if (re-search-forward mesa-namelist-key-value-re (line-end-position) t)
+        (replace-match (read-string "Value: " (if arg (match-string 3))) nil nil nil 3)
+      (message "Line is not a key-value pair"))))
+
+(defun mesa-edit-index (&optional arg)
+  (interactive "P")
+  (save-excursion
+    (beginning-of-line)
+    (if (re-search-forward mesa-namelist-key-value-re (line-end-position) t)
+        (let ((index (match-string 2)))
+          (if (not (string= "" index))
+              (replace-match (read-string "Index: " (if arg index)) nil nil nil 2)
+            (message "Key does not have an array index")))
+     (message "Line is not a key-value pair"))))
+
 ;;; Syntax table
 (defvar mesa-mode-syntax-table
   (let ((st (make-syntax-table)))
@@ -291,14 +310,16 @@ comment at the end of the line."
 
 
 ;;; Font lock.
-(defvar mesa-namelist-key-re
+(defvar mesa-namelist-key-value-re
   (concat
-   "^[[:blank:]]*"                      ; leading whitespace
-   "\\([a-zA-Z0-9_]*\\)"                ; key
-   "(?[0-9,]?+)?"                       ; (indicies)?
-   "[[:blank:]]*="                      ; equals
+   "^[[:blank:]]*"                       ; leading whitespace
+   "\\([a-zA-Z0-9_]*\\)"                 ; key
+   "(?\\([0-9,]?+\\))?"                  ; (indicies)?
+   "[[:blank:]]*=[[:blank:]]*"           ; equals
+   "[\"\']?\\([a-zA-Z0-9_.-]+\\)[\"\']?" ; value
+   "[[:blank:]]*"                        ; trailing whitespace
    )
-  "Regexp for matching namelist key")
+  "Regexp for matching namelist key-value pair")
 
 (defconst mesa-namelist-boolean-keywords
   '(".true." ".false.")
@@ -319,7 +340,7 @@ comment at the end of the line."
    (cons mesa-namelist-start-re '(1 font-lock-function-name-face))
 
    ;; highlight keys
-   (cons mesa-namelist-key-re '(1 font-lock-variable-name-face))
+   (cons mesa-namelist-key-value-re '(1 font-lock-variable-name-face))
 
    ;; highlight values
    ;; values could be strings, booleans, or numbers
@@ -339,6 +360,8 @@ comment at the end of the line."
   (let ((map (make-sparse-keymap)))
     (define-key map "\C-c\C-t" 'mesa-toggle-boolean)
     (define-key map "\C-c\C-c" 'mesa-comment-dwim)
+    (define-key map "\C-c\C-e" 'mesa-edit-value)
+    (define-key map "\C-c\C-i" 'mesa-edit-index)
     (define-key map "\C-c\C-v" 'mesa-change-version)
     map)
   "Key map for `mesa-mode'.")
@@ -356,8 +379,8 @@ comment at the end of the line."
   (setq-local indent-tabs-mode nil)
   (setq-local indent-line-function 'mesa-mode-indent-line)
 
-  ;; set the MESA version
   (progn
+    ;; set the MESA version
     (setq-local mesa-version mesa-default-version)
     (setq-local mode-name (mesa-mode-name))
     
