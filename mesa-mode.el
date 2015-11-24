@@ -204,6 +204,15 @@ comment at the end of the line."
        (line-beginning-position) (line-end-position))
     (comment-dwim arg)))
 
+;; adapted from http://www.emacswiki.org/emacs/EmacsTags#tags
+(defun mesa-view-tag-default-other-window ()
+  "Like as `find-tag-other-window' but doesn't move the point"
+  (interactive)
+  (let ((window (get-buffer-window)))
+    (find-tag-other-window (find-tag-default))
+    (recenter nil)
+    (select-window window)))
+
 (defun mesa-mode-name ()
   (format "MESA[%s]" mesa-version))
 
@@ -294,6 +303,34 @@ comment at the end of the line."
             (message "Key does not have an array index")))
      (message "Line is not a key-value pair"))))
 
+
+(defun mesa-reset-to-default ()
+  "Reset a key-value pair to the default"
+  (interactive)
+  (let (tagname tagbuffer tagline tagdefault)
+
+    ;; extract default tag line
+    (save-current-buffer
+      (setq tagname (find-tag-default))
+      (setq tagbuffer (find-tag-noselect tagname)))
+    (with-current-buffer tagbuffer
+      (setq tagline (thing-at-point 'line t)))
+
+    ;; extract default tag value
+    (string-match mesa-namelist-key-value-re tagline)
+    (setq tagdefault (match-string 3 tagline))
+
+    ;; replace tag name
+    (save-excursion
+      (beginning-of-line)
+      (if (re-search-forward mesa-namelist-key-value-re (line-end-position) t)
+          (if (string= tagname (match-string 1))
+              (progn
+                (message "Resetting tag to %s" tagdefault)
+                (replace-match tagdefault nil nil nil 3))
+            (message "Bad tag"))
+        (message "Line is not a key-value pair")))))
+
 ;;; Syntax table
 (defvar mesa-mode-syntax-table
   (let ((st (make-syntax-table)))
@@ -356,8 +393,10 @@ comment at the end of the line."
 (defvar mesa-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "\C-c\C-c" 'mesa-comment-dwim)
+    (define-key map "\C-c\C-d" 'mesa-view-tag-default-other-window)
     (define-key map "\C-c\C-e" 'mesa-edit-value)
     (define-key map "\C-c\C-i" 'mesa-edit-index)
+    (define-key map "\C-c\C-r" 'mesa-reset-to-default)
     (define-key map "\C-c\C-t" 'mesa-toggle-boolean)
     (define-key map "\C-c\C-v" 'mesa-change-version)
     map)
