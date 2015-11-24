@@ -68,11 +68,6 @@
   :group 'mesa
 )
 
-(defconst mesa-rse-include-line
-  "      include 'standard_run_star_extras.inc'"
-  "Line in run_star_extras.f that pulls in default code."
-  )
-
 (defconst mesa-defaults-files
   '("star/defaults/star_job.defaults"
     "star/defaults/controls.defaults"
@@ -186,7 +181,8 @@
                  "Select MESA Version: "
                  (mesa-versions)
                  nil t))
-    (mesa-change-tags-table))
+  (setq-local mode-name (mesa-mode-name))
+  (mesa-change-tags-table))
 
 (defun mesa-toggle-boolean ()
   "Toggle an inlist flag between .true. <--> .false."
@@ -207,14 +203,6 @@ comment at the end of the line."
       (comment-or-uncomment-region
        (line-beginning-position) (line-end-position))
     (comment-dwim arg)))
-
-(defun mesa-increment-index ()
-  "Increment/decrement indicies"
-  (interactive)
-  (save-excursion
-    (beginning-of-line)
-    (if (re-search-forward "(\\([[:digit:]]\\))" (line-end-position))
-        (replace-match (format "(%s)" (number-to-string (1+ (string-to-number (match-string 1)))))))))
 
 (defun mesa-mode-name ()
   (format "MESA[%s]" mesa-version))
@@ -268,15 +256,24 @@ comment at the end of the line."
   :safe  'stringp
   :group 'mesa)
 
+
+;; The function mesa-inside-namelist is based on f90-namelist-mode.el
+;; License: GPL v2+
+;; Copyright: D. Dickinson and P. Hill
+;; URL: https://github.com/ZedThree/f90-namelist-mode
+
 (defun mesa-inside-namelist ()
-  "Returns t if currently inside a namelist and nil if not"
-  (setq st (save-excursion (re-search-backward mesa-namelist-start-re 0 t)))
-  (setq en (save-excursion (re-search-backward mesa-namelist-end-re 0 t)))
-  (when (not st)
-    (setq st 0))
-  (when (not en)
-    (setq en 0))
-  ( > st en))
+  "Returns the name of the namelist if inside a namelist and nil if not"
+  (let (start end namelist)
+    (save-excursion
+      (setq start (re-search-backward mesa-namelist-start-re 0 t))
+      (when (not start) (setq start 0))
+      (setq namelist (match-string-no-properties 1)))
+    (save-excursion
+      (setq end (re-search-backward mesa-namelist-end-re 0 t))
+      (when (not end) (setq end 0)))
+    (if ( > start end) namelist)))
+
 
 (defun mesa-edit-value (&optional arg)
   (interactive "P")
