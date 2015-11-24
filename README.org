@@ -72,7 +72,7 @@ to get the syntax highlighting.  I also recommend using the read-only
 view-mode which will prevent you from confusing them with your inlists
 and editing them accidentally.
 #+BEGIN_EXAMPLE
-  (add-to-list 'auto-mode-alist '("\\.defaults\\'" . (lambda () (mesa-mode) (view-mode)))
+  (add-to-list 'auto-mode-alist '("\\.defaults\\'" . (lambda () (mesa-mode) (view-mode))))
 #+END_EXAMPLE
 
 There is an included =minimal_init.el= file that contains these
