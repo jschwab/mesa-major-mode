@@ -358,10 +358,10 @@ comment at the end of the line."
 
 (defvar mesa-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "\C-c\C-t" 'mesa-toggle-boolean)
     (define-key map "\C-c\C-c" 'mesa-comment-dwim)
     (define-key map "\C-c\C-e" 'mesa-edit-value)
     (define-key map "\C-c\C-i" 'mesa-edit-index)
+    (define-key map "\C-c\C-t" 'mesa-toggle-boolean)
     (define-key map "\C-c\C-v" 'mesa-change-version)
     map)
   "Key map for `mesa-mode'.")
@@ -371,6 +371,10 @@ comment at the end of the line."
   "A major mode for editing MESA inlist files"
   :syntax-table mesa-mode-syntax-table
   :group 'mesa
+
+  ;; specify comment characters
+  (setq-local comment-start "! ")
+  (setq-local comment-start-skip "!+\\s-*")
 
   ;; font-lock
   (setq-local font-lock-defaults '(mesa-font-lock-keywords))
