@@ -282,8 +282,9 @@ comment at the end of the line."
   (let (start end namelist)
     (save-excursion
       (setq start (re-search-backward mesa-namelist-start-re 0 t))
-      (when (not start) (setq start 0))
-      (setq namelist (match-string-no-properties 1)))
+      (if start
+          (setq namelist (match-string-no-properties 1))
+        (setq start 0)))
     (save-excursion
       (setq end (re-search-backward mesa-namelist-end-re 0 t))
       (when (not end) (setq end 0)))
