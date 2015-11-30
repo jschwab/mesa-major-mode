@@ -357,7 +357,7 @@ comment at the end of the line."
    "\\([a-zA-Z0-9_]*\\)"                 ; key
    "(?\\([0-9,]?+\\))?"                  ; (indicies)?
    "[[:blank:]]*=[[:blank:]]*"           ; equals
-   "[\"\']?\\([a-zA-Z0-9_.-]+\\)[\"\']?" ; value
+   "[\"\']?\\([a-zA-Z0-9_.-]*\\)[\"\']?" ; value
    "[[:blank:]]*"                        ; trailing whitespace
    )
   "Regexp for matching namelist key-value pair")
