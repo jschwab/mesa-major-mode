@@ -115,7 +115,11 @@ This is the other primary motivation for the major-mode.
 
 The command =C-c C-d= will open another window and show you to a
 variable's definition in the appropriate .defaults file.  This lets
-you see the default value and the surrounding documentation.
+you see the default value and the surrounding documentation.  You can
+delete or resize this window using standard [[http://www.gnu.org/software/emacs/manual/html_node/emacs/Change-Window.html][emacs window commands]].
+For example, you can delete it using the command =C-x 1=.  You can
+also use the command =C-x o= to switch to this other window and then
+look around in the defaults file.
 
 Emacs has a huge number of searching and completion functions that can
 make use of tags.  For example, the command =M-.= will jump you to a
