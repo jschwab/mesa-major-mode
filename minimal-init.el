@@ -1,14 +1,9 @@
 ;;; Minimal setup to load latest `mesa-mode'
 
-;; activate debugging
-;; (setq debug-on-error t
-;;       debug-on-signal nil
-;;       debug-on-quit t)
-
-;; (setq edebug-trace t)
-
 ;; load the mode
-(add-to-list 'load-path (expand-file-name "/home/jschwab/Software/mesa-major-mode/"))
+;;   change /path/to/mesa-major-mode to be the path to the
+;;   the folder where you placed the mesa-mode.el file
+(add-to-list 'load-path "/path/to/mesa-major-mode/")
 (require 'mesa-mode)
 
 ;; set default MESA version

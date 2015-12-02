@@ -45,9 +45,11 @@ file]] to your computer.
 
 ** Configure emacs 
 Make sure that mesa-mode.el is in your load-path and then require it
-in your Emacs init file.
+in your Emacs init file.  Replace =/path/to/mesa-major-mode= with the
+path to the the folder where you placed the mesa-mode.el file.
+
 #+BEGIN_EXAMPLE
-  (add-to-list 'load-path "/home/jschwab/Software/mesa-major-mode/")
+  (add-to-list 'load-path "/path/to/mesa-major-mode/")
   (require 'mesa-mode)
 #+END_EXAMPLE
 
