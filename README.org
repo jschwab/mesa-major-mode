@@ -150,9 +150,11 @@ Here's a summary table.  More detail is below.
 with the text entered in the minibuffer.  With a prefix argument
 =C-u=, the minibuffer will initially contain the current value.
 *** Edit option index
-=C-c C-i= will replace the value of array index on the current line
-with the text entered in the minibuffer.  With a prefix argument
-=C-u=, the minibuffer will initially contain the current value.
+=C-c C-i= will replace the value of an array index with the text
+entered in the minibuffer.  If no region is active, this replacement
+will occur on the current line.  If a region is active, this
+replacement will occur for all options in the region that have an
+index.
 *** Reset option to default value
 =C-c C-r= will reset an option to its default value (i.e. the one
 specified in the MESA .defaults file).

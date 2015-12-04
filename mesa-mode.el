@@ -292,6 +292,7 @@ comment at the end of the line."
 
 
 (defun mesa-edit-value (&optional arg)
+  "Edit the value portion of a line"
   (interactive "P")
   (save-excursion
     (beginning-of-line)
@@ -299,16 +300,20 @@ comment at the end of the line."
         (replace-match (read-string "Value: " (if arg (match-string 3))) nil nil nil 3)
       (message "Line is not a key-value pair"))))
 
-(defun mesa-edit-index (&optional arg)
-  (interactive "P")
+
+(defun mesa-edit-index (&optional start end index)
+  "Replace array indicies between START and END with INDEX.  If called
+interactively, START and END are the start/end of the region if the
+mark is active, or of the line f the mark is inactive."
+  (interactive (let ((index (read-string "Index: ")))
+                 (if (use-region-p)
+                     (list (region-beginning) (region-end) index)
+                   (list (line-beginning-position) (line-end-position) index))))
   (save-excursion
-    (beginning-of-line)
-    (if (re-search-forward mesa-namelist-key-value-re (line-end-position) t)
-        (let ((index (match-string 2)))
-          (if (not (string= "" index))
-              (replace-match (read-string "Index: " (if arg index)) nil nil nil 2)
-            (message "Key does not have an array index")))
-     (message "Line is not a key-value pair"))))
+    (goto-char start)
+    (while (re-search-forward mesa-namelist-key-value-re end t)
+      (unless (string= "" (match-string 2))
+          (replace-match index nil nil nil 2)))))
 
 
 (defun mesa-reset-to-default ()
