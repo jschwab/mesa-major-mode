@@ -135,13 +135,14 @@ prevents typos.
 
 Here's a summary table.  More detail is below.
 
-| Key       | Effect                             |
-|-----------+------------------------------------|
-| =C-c C-c= | Toggle comment status
-| =C-c C-e= | Edit option value                  |
-| =C-c C-i= | Edit option index                  |
-| =C-c C-r= | Reset option to default value      |
-| =C-c C-t= | Toggle boolean value               |
+| Key       | Effect                        |
+|-----------+-------------------------------|
+| =C-c C-c= | Toggle comment status         |
+| =C-c C-e= | Edit option value             |
+| =C-c C-f= | Toggle strict formatting      |
+| =C-c C-i= | Edit option index             |
+| =C-c C-r= | Reset option to default value |
+| =C-c C-t= | Toggle boolean value          |
 
 *** Toggle comment status
 =C-c C-c= will toggle the comment status of lines, regions, etc.
@@ -149,6 +150,8 @@ Here's a summary table.  More detail is below.
 =C-c C-e= will replace the value of the option on the current line
 with the text entered in the minibuffer.  With a prefix argument
 =C-u=, the minibuffer will initially contain the current value.
+*** Toggle strict formatting
+=C-c C-f= will toggle strict formatting mode (see below) on/off.
 *** Edit option index
 =C-c C-i= will replace the value of an array index with the text
 entered in the minibuffer.  If no region is active, this replacement
@@ -161,8 +164,9 @@ specified in the MESA .defaults file).
 *** Toggle boolean values
 =C-c C-t= will switch the option value between =.true.= and =.false.=.
 ** Strict formatting
-mesa-mode gives you very little control over your inlist formatting.
-This strictness was inspired by [[https://github.com/mkmcc/athinput-mode][Mike McCourt's athinput-mode]].
+When strict formatting is active, mesa-mode gives you very little
+control over your inlist formatting.  This strictness was inspired by
+[[https://github.com/mkmcc/athinput-mode][Mike McCourt's athinput-mode]].
 
 When you save the inlist, extraneous whitespace will be stripped and
 inlist commands will be indented.
@@ -177,6 +181,14 @@ example, if you prefer 4 space indents, you could set
 
 If there are additional formatting aspects that are important, please
 write to me or send a pull request.
+
+By default, strict formatting mode is off, but you can activate it on
+a per-buffer basis with =C-c C-f=.  If you would like it to be on by
+default, you can set
+
+#+BEGIN_EXAMPLE
+  (setq mesa-mode-enforce-formatting-default t)
+#+END_EXAMPLE
 
 ** MESA version management
 Each buffer is initially associated with the default MESA version, but
