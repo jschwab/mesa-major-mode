@@ -34,6 +34,25 @@
   :type  'hook
   :group 'mesa)
 
+(defcustom mesa-mode-enforce-formatting-default nil
+  "Option to use strict formatting controls"
+  :type 'boolean
+  :group 'mesa)
+
+(defun mesa-toggle-strict-formatting ()
+  (interactive)
+  "Switch between loose/strict formatting"
+  ;; toggle boolean
+  (setq-local mesa-mode-enforce-formatting (not mesa-mode-enforce-formatting))
+
+  (if mesa-mode-enforce-formatting
+      (setq-local indent-line-function 'mesa-mode-indent-line)
+    (setq-local indent-line-function 'indent-relative))
+
+  (if mesa-mode-enforce-formatting
+      (message "Strict formatting is on")
+    (message "Strict formatting is off")))
+
 (defcustom mesa-indent-string
   "  "
   "String to use to indent lines; default is two spaces"
@@ -244,8 +263,9 @@ comment at the end of the line."
     (goto-char (marker-position old-point))))
 
 (defun mesa-mode-before-save-hook ()
-  (indent-region (point-min) (point-max))
-  (whitespace-cleanup))
+  (when mesa-mode-enforce-formatting
+    (indent-region (point-min) (point-max))
+    (whitespace-cleanup)))
 
 (defcustom mesa-comment-start-re "[!#]+"
   "Regexp for start of a comment"
@@ -407,6 +427,7 @@ mark is active, or of the line f the mark is inactive."
     (define-key map "\C-c\C-c" 'mesa-comment-dwim)
     (define-key map "\C-c\C-d" 'mesa-view-tag-default-other-window)
     (define-key map "\C-c\C-e" 'mesa-edit-value)
+    (define-key map "\C-c\C-f" 'mesa-toggle-strict-formatting)
     (define-key map "\C-c\C-i" 'mesa-edit-index)
     (define-key map "\C-c\C-r" 'mesa-reset-to-default)
     (define-key map "\C-c\C-t" 'mesa-toggle-boolean)
@@ -427,15 +448,19 @@ mark is active, or of the line f the mark is inactive."
   ;; font-lock
   (setq-local font-lock-defaults '(mesa-font-lock-keywords))
 
-  ;; require strict formatting
+  ;; formatting controls
   (setq-local indent-tabs-mode nil)
-  (setq-local indent-line-function 'mesa-mode-indent-line)
+
+    ;; set local formatting choice to default
+  (setq-local mesa-mode-enforce-formatting mesa-mode-enforce-formatting-default)
+
+
 
   (progn
     ;; set the MESA version
     (setq-local mesa-version mesa-default-version)
     (setq-local mode-name (mesa-mode-name))
-    
+
     ;; make TAGS file if it doesn't exist
     (if (not (file-exists-p (mesa-tags-file)))
         (mesa-regen-tags))
