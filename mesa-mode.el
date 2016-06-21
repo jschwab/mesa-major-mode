@@ -431,6 +431,29 @@ mark is active, or of the line f the mark is inactive."
     map)
   "Key map for `mesa-mode'.")
 
+
+
+;;;###autoload
+(defun mesa-mode-xref-backend ()
+  "Mesa-Mode backend for Xref."
+  'xref-mesa)
+
+(cl-defmethod xref-backend-identifier-at-point ((_backend (eql xref-mesa)))
+  (save-excursion
+    (beginning-of-line)
+    (re-search-forward mesa-namelist-key-value-re (line-end-position) t)
+    (match-string-no-properties 1)))
+
+(cl-defmethod xref-backend-identifier-completion-table ((_backend (eql xref-mesa)))
+  (tags-lazy-completion-table))
+
+(cl-defmethod xref-backend-definitions ((_backend (eql xref-mesa)) symbol)
+  (etags--xref-find-definitions symbol))
+
+(cl-defmethod xref-backend-apropos ((_backend (eql xref-mesa)) symbol)
+  (etags--xref-find-definitions symbol t))
+
+
 ;;;###autoload
 (define-derived-mode mesa-mode prog-mode "mesa"
   "A major mode for editing MESA inlist files"
@@ -468,6 +491,7 @@ mark is active, or of the line f the mark is inactive."
   
   ;; hooks
   (add-hook 'before-save-hook 'mesa-mode-before-save-hook nil t)
+  (add-hook 'xref-backend-functions #'mesa-mode-xref-backend nil t)
   (run-hooks 'mesa-mode-hook))
 
 (provide 'mesa-mode)

@@ -12,8 +12,11 @@ binary_job, and binary_controls namelists.
 
 * Installation and Prerequisites
 ** Install a recent version of emacs
-To use the major mode, you must have Emacs 24.X.  I recommend using
-the current version, 24.5.
+To use the major mode, you must have Emacs 25.1.  (Emacs 25 provides
+=xref-= functions that are superior the old =tags-= functions;
+mesa-mode is in the process of learning to use these.) If you are
+using emacs 24.X, there is an =emacs24= git tag marking where I broke
+backwards compatibility.
 
 If you are using MESA on a remote system where only older emacs
 versions are available, you may want to consider running a newer
@@ -123,7 +126,7 @@ look around in the defaults file.
 
 Emacs has a huge number of searching and completion functions that can
 make use of tags.  For example, the command =M-.= will jump you to a
-variable's definition in the appropriate .defaults file. =M-*= will
+variable's definition in the appropriate .defaults file. =M-,= will
 jump you back to your place in the inlist.  Your completion command
 =M-/= will also be able to take advantage of tags.  To learn more
 about what tags are and what they can do, read the [[http://www.gnu.org/software/emacs/manual/html_node/emacs/Tags.html#Tags][Emacs docs]].
