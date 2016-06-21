@@ -182,10 +182,6 @@
   ;; make TAGS file if it doesn't exist
   (if (not (file-exists-p (mesa-tags-file)))
       (mesa-regen-tags)))
-  
-(defun mesa-cleanup-tags-table ()
-  "Cleanup tags table"
-  (delete mesa-tags-file-name tags-table-list))
 
 (defun mesa-regen-tags ()
   "Regenerate the tags file for the MESA defaults directory"
@@ -466,6 +462,7 @@ mark is active, or of the line f the mark is inactive."
         (mesa-regen-tags))
 
     ;; if TAGS does exist, visit it
+    (setq-local tags-file-name (mesa-tags-file))
     (if (file-exists-p (mesa-tags-file))
         (mesa-visit-tags-table)))
   
