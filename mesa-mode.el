@@ -230,7 +230,7 @@ comment at the end of the line."
   "Like as `find-tag-other-window' but doesn't move the point"
   (interactive)
   (let ((window (get-buffer-window)))
-    (find-tag-other-window (find-tag-default))
+    (find-tag-other-window (mesa-find-tag-default))
     (recenter nil)
     (select-window window)))
 
@@ -339,7 +339,7 @@ mark is active, or of the line f the mark is inactive."
 
     ;; extract default tag line
     (save-current-buffer
-      (setq tagname (find-tag-default))
+      (setq tagname (mesa-find-tag-default))
       (setq tagbuffer (find-tag-noselect tagname)))
     (with-current-buffer tagbuffer
       (setq tagline (thing-at-point 'line t)))
@@ -432,6 +432,11 @@ mark is active, or of the line f the mark is inactive."
   "Key map for `mesa-mode'.")
 
 
+(defun mesa-find-tag-default ()
+  (save-excursion
+    (beginning-of-line)
+    (re-search-forward mesa-namelist-key-value-re (line-end-position) t)
+    (match-string-no-properties 1)))
 
 ;;;###autoload
 (defun mesa-mode-xref-backend ()
@@ -439,10 +444,7 @@ mark is active, or of the line f the mark is inactive."
   'xref-mesa)
 
 (cl-defmethod xref-backend-identifier-at-point ((_backend (eql xref-mesa)))
-  (save-excursion
-    (beginning-of-line)
-    (re-search-forward mesa-namelist-key-value-re (line-end-position) t)
-    (match-string-no-properties 1)))
+  (mesa-find-tag-default))
 
 (cl-defmethod xref-backend-identifier-completion-table ((_backend (eql xref-mesa)))
   (tags-lazy-completion-table))
@@ -458,6 +460,7 @@ mark is active, or of the line f the mark is inactive."
 (define-derived-mode mesa-mode prog-mode "mesa"
   "A major mode for editing MESA inlist files"
   :syntax-table mesa-mode-syntax-table
+  :find-tag-default-function mesa-find-tag-default
   :group 'mesa
 
   ;; specify comment characters
