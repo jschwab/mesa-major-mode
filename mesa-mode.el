@@ -4,7 +4,7 @@
 ;; Author: Josiah Schwab <jschwab@gmail.com>
 ;; Keywords: files
 
-;; Copyright (C) 2013-2015 Josiah Schwab
+;; Copyright (C) 2013-2016 Josiah Schwab
 
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
