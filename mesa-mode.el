@@ -313,7 +313,7 @@ comment at the end of the line."
   (save-excursion
     (beginning-of-line)
     (if (re-search-forward mesa-namelist-key-value-re (line-end-position) t)
-        (replace-match (read-string "Value: " (if arg (match-string 3))) nil nil nil 3)
+        (replace-match (read-string "Value: " (if arg (match-string-no-properties 3))) nil nil nil 3)
       (message "Line is not a key-value pair"))))
 
 
