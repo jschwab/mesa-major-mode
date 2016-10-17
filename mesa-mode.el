@@ -119,7 +119,7 @@
       (cond ((string-match "^;" l) nil)
             ((string-match "^[ \t]$" l) nil)
             ((string-match "^\\[\\(.*\\)\\]$" l)
-             (progn 
+             (progn
                (if section
                    ;; add as sub-list
                    (setq alist (cons `(,section . ,section-list) alist))
@@ -129,7 +129,7 @@
             ((string-match "^[ \t]*\\(.+\\) = \\(.+\\)$" l)
              (let ((property (match-string 1 l))
                    (value (match-string 2 l)))
-               (progn 
+               (progn
                  (setq section-list (cons `(,property . ,value) section-list)))))))
     (if section
         ;; add as sub-list
@@ -172,16 +172,17 @@
 
 (defun mesa-change-tags-table ()
   "Change tags table"
+
+  ;; make TAGS file if it doesn't exist
+  (if (not (file-exists-p (mesa-tags-file)))
+      (mesa-regen-tags))
+
   ;; this works, but I don't understand why it is necesary.  if I just
   ;; used visit-tags-table, it would still always visit the old table,
   ;; even though tags-file-name would have the right value...
   (setq-local tags-table-list nil)
   (add-to-list 'tags-table-list (mesa-tags-file))
-  (setq-local tags-file-name (mesa-tags-file))
-
-  ;; make TAGS file if it doesn't exist
-  (if (not (file-exists-p (mesa-tags-file)))
-      (mesa-regen-tags)))
+  (setq-local tags-file-name (mesa-tags-file)))
 
 (defun mesa-regen-tags ()
   "Regenerate the tags file for the MESA defaults directory"
@@ -491,7 +492,7 @@ mark is active, or of the line f the mark is inactive."
     (setq-local tags-file-name (mesa-tags-file))
     (if (file-exists-p (mesa-tags-file))
         (mesa-visit-tags-table)))
-  
+
   ;; hooks
   (add-hook 'before-save-hook 'mesa-mode-before-save-hook nil t)
   (add-hook 'xref-backend-functions #'mesa-mode-xref-backend nil t)
