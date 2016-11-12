@@ -230,10 +230,13 @@ comment at the end of the line."
 (defun mesa-view-tag-default-other-window ()
   "Like as `find-tag-other-window' but doesn't move the point"
   (interactive)
-  (let ((window (get-buffer-window)))
-    (find-tag-other-window (mesa-find-tag-default))
-    (recenter nil)
-    (select-window window)))
+  (let ((window (get-buffer-window))
+        (identifier (mesa-find-tag-default)))
+    (if (not identifier)
+        (message "No option on this line")
+      (xref-find-definitions-other-window identifier)
+      (recenter nil)
+      (select-window window))))
 
 (defun mesa-mode-name ()
   (format "MESA[%s]" mesa-version))
