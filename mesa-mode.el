@@ -432,6 +432,7 @@ mark is active, or of the line f the mark is inactive."
     (define-key map "\C-c\C-r" 'mesa-reset-to-default)
     (define-key map "\C-c\C-t" 'mesa-toggle-boolean)
     (define-key map "\C-c\C-v" 'mesa-change-version)
+    (define-key map "\M-." 'mesa-find-defintions)
     map)
   "Key map for `mesa-mode'.")
 
@@ -441,6 +442,14 @@ mark is active, or of the line f the mark is inactive."
     (beginning-of-line)
     (re-search-forward mesa-namelist-key-value-re (line-end-position) t)
     (match-string-no-properties 1)))
+
+(defun mesa-find-defintions ()
+  "Wrapper for xref--find-definitions."
+  (interactive)
+  (let ((identifier (mesa-find-tag-default)))
+    (if identifier
+        (xref--find-definitions identifier nil)
+      (message "No option on this line"))))
 
 ;;;###autoload
 (defun mesa-mode-xref-backend ()
