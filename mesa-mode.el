@@ -440,8 +440,8 @@ mark is active, or of the line f the mark is inactive."
 (defun mesa-find-tag-default ()
   (save-excursion
     (beginning-of-line)
-    (re-search-forward mesa-namelist-key-value-re (line-end-position) t)
-    (match-string-no-properties 1)))
+    (when (re-search-forward mesa-namelist-key-value-re (line-end-position) t)
+      (match-string-no-properties 1))))
 
 (defun mesa-find-defintions ()
   "Wrapper for xref--find-definitions."
