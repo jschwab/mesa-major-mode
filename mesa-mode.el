@@ -156,7 +156,7 @@
       filename)))
 
 (defun mesa~prepend-mesa-dir (filename)
-  "Append the MESA_DIR to a filename"
+  "Prepend the MESA_DIR to a filename"
   (let ((mesa-dir (mesa-dir-from-version mesa-version)))
     (mesa~prepend-system-name
      (concat (file-name-as-directory mesa-dir) filename))))
