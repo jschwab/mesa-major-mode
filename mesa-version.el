@@ -104,6 +104,13 @@ variable MESA_DIR."
    (mesa-version-mesa-dir mesa-version-mesa-dir)
    (t (getenv "MESA_DIR"))))
 
+(defun mesa-version-for-lighter ()
+  "Get a version string to display in the mode line"
+  (cond
+   (mesa-version-buffer mesa-version-buffer)
+   (mesa-version-mesa-dir "mesa-dir")
+   (t "MESA_DIR")))
+
 (defun mesa-version-change ()
   "Change the MESA version being used in this buffer"
   (interactive)
@@ -114,7 +121,7 @@ variable MESA_DIR."
                  nil t)))
 
 (defcustom mesa-version-mode-line
-  '(:eval (format " [%s]" mesa-version-buffer))
+  '(:eval (format " [%s]" (mesa-version-for-lighter)))
   "Mode line lighter for mesa-version minor mode"
   :type 'sexp
   :risky t)
