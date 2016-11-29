@@ -83,12 +83,13 @@
          (end-pattern (format "end subroutine %s" subroutine)))
      (save-excursion
        (goto-char (point-min))
-       (let* ((point-beg (search-forward beg-pattern))
-              (point-end (search-forward end-pattern)))
-         (save-restriction
-           (narrow-to-region point-beg point-end)
-           (goto-char (point-min))
-           ,@body)))))
+       (let* ((point-beg (search-forward beg-pattern nil t))
+              (point-end (search-forward end-pattern nil t)))
+         (when (and (and point-beg point-end) (> point-end point-beg))
+           (save-restriction
+             (narrow-to-region point-beg point-end)
+             (goto-char (point-min))
+             ,@body))))))
 
 
 (defun rse~find-max-index-in-subroutine (subroutine thing-with-index)
