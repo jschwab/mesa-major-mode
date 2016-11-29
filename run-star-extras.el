@@ -50,9 +50,19 @@
   :type  'hook
   :group 'rse)
 
+(defcustom rse-after-save-hook nil
+  "Hook to run after saving inlist"
+  :type  'hook
+  :group 'rse)
+
 
 (defcustom rse-update-extra-column-counts nil
   "Option to automatically update extra column counts on save"
+  :type 'boolean
+  :group 'rse)
+
+(defcustom rse-recompile-on-save nil
+  "Option to automatically recompile on save"
   :type 'boolean
   :group 'rse)
 
@@ -133,6 +143,17 @@
     (rse~update-how-many-extra-history-columns)
     (rse~update-how-many-extra-profile-columns)))
 
+(defun rse-compile-with-enviroment ()
+  "Compile in an enviroment where MESA_DIR is from mesa-version"
+  (interactive)
+  (let* ((mesa-dir (mesa-version-get-mesa-dir))
+         (compilation-environment `(,(format "MESA_DIR=%s" mesa-dir))))
+    (compile compile-command)))
+
+(defun rse-after-save-hook ()
+  (when rse-recompile-on-save
+    (rse-compile-with-enviroment)))
+
 (define-minor-mode run-star-extras-minor-mode
   "Toggle run-star-extras minor mode in the usual way."
   :init-value nil
@@ -141,6 +162,7 @@
   ;; The minor mode bindings.
   :keymap
   '(
+    ("\C-c\C-c" . rse-compile-with-enviroment)
     ("\C-c\C-r" . rse-enable)
     )
   ;; The body
@@ -150,11 +172,19 @@
       (progn
         ;; turn on mesa-version minor mode
         (mesa-version-minor-mode 1)
-        (add-hook 'before-save-hook 'rse-before-save-hook nil t))
+
+        ;; add hooks
+        (add-hook 'before-save-hook 'rse-before-save-hook nil t)
+        (add-hook 'after-save-hook 'rse-after-save-hook nil t)
+
+        ;; set the compile command
+        (setq-local compilation-read-command nil)
+        (setq-local compile-command "cd ../ && ./clean && ./mk"))
 
   ;; turn run-star-extras-minor-mode off
     (progn
-      (remove-hook 'before-save-hook 'rse-before-save-hook t)))
+      (remove-hook 'before-save-hook 'rse-before-save-hook t)
+      (remove-hook 'after-save-hook 'rse-after-save-hook t)))
   
   ;; the group
   :group 'rse)
