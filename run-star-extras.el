@@ -25,6 +25,8 @@
 
 ;;; Code:
 
+(require 'mesa-version)
+
 (defgroup rse nil
   "A minor mode for editing MESA run_star_extras.f files"
   :prefix "rse-")
@@ -57,7 +59,7 @@
 
 (defun rse~prepend-mesa-dir (filename)
   "Prepend the MESA_DIR to a filename"
-  (let ((mesa-dir "/home/jschwab/Software/mesa-r8845"))
+  (let ((mesa-dir (mesa-version-get-mesa-dir)))
     (concat (file-name-as-directory mesa-dir) filename)))
 
 
@@ -145,6 +147,8 @@
 
       ;; turn run-star-extras-minor-mode on
       (progn
+        ;; turn on mesa-version minor mode
+        (mesa-version-minor-mode 1)
         (add-hook 'before-save-hook 'rse-before-save-hook nil t))
 
   ;; turn run-star-extras-minor-mode off

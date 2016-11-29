@@ -25,6 +25,8 @@
 
 ;;; Code:
 
+(require 'mesa-version)
+
 (defgroup mesa nil
   "A major mode for editing MESA inlist files"
   :prefix "mesa-")
@@ -72,20 +74,6 @@
   :group 'mesa
 )
 
-(defcustom mesa-default-version
-  "git"
-  "Default version of MESA"
-  :type 'string
-  :group 'mesa
-  )
-
-(defcustom mesa-init-file
-  "~/.mesa_init"
-  "Default MESA init file"
-  :type 'file
-  :group 'mesa
-)
-
 (defcustom mesa-use-remote-paths
   nil
   "If t, use remote paths for tramp buffers; if nil, always use local paths."
@@ -101,53 +89,6 @@
     "binary/defaults/binary_controls.defaults")
   "Defaults files contained in MESA")
 
-
-;; The function mesa-read-init is based on ini.el
-;; License: GPL v2+
-;; Copyright: Daniel Ness
-;; URL: https://github.com/daniel-ness/ini.el
-
-(defun mesa-read-init (filename)
-  "Read a MESA config file"
-  (let ((lines (with-temp-buffer
-                 (insert-file-contents filename)
-                 (split-string (buffer-string) "\n")))
-        (section)
-        (section-list)
-        (alist))
-    (dolist (l lines)
-      (cond ((string-match "^;" l) nil)
-            ((string-match "^[ \t]$" l) nil)
-            ((string-match "^\\[\\(.*\\)\\]$" l)
-             (progn
-               (if section
-                   ;; add as sub-list
-                   (setq alist (cons `(,section . ,section-list) alist))
-                 (setq alist section-list))
-               (setq section (match-string 1 l))
-               (setq section-list nil)))
-            ((string-match "^[ \t]*\\(.+\\) = \\(.+\\)$" l)
-             (let ((property (match-string 1 l))
-                   (value (match-string 2 l)))
-               (progn
-                 (setq section-list (cons `(,property . ,value) section-list)))))))
-    (if section
-        ;; add as sub-list
-        (setq alist (cons `(,section . ,section-list) alist))
-      (setq alist section-list))
-    alist))
-
-(defun mesa-versions ()
-  "List the possible MESA versions"
-  (let ((mesa-init-data (mesa-read-init mesa-init-file)))
-    (mapcar 'car mesa-init-data)))
-
-(defun mesa-dir-from-version (version)
-  "Given a MESA version string, return the corresponding MESA_DIR"
-  (let ((mesa-init-data (mesa-read-init mesa-init-file)))
-    (cdr (assoc "MESA_DIR"
-                (cdr (assoc version mesa-init-data))))))
-
 (defun mesa~prepend-system-name (filename)
   "Given a filename, (possibly) prepend the remote system name"
   (let ((remote (file-remote-p (buffer-file-name))))
@@ -157,32 +98,23 @@
 
 (defun mesa~prepend-mesa-dir (filename)
   "Prepend the MESA_DIR to a filename"
-  (let ((mesa-dir (mesa-dir-from-version mesa-version)))
+  (let ((mesa-dir (mesa-version-get-mesa-dir)))
     (mesa~prepend-system-name
-     (concat (file-name-as-directory mesa-dir) filename))))
+       (concat (file-name-as-directory mesa-dir) filename))))
 
 (defun mesa-tags-file ()
   "Create the full path to the TAGS directory"
   (mesa~prepend-mesa-dir mesa-tags-file-path))
 
 (defun mesa-visit-tags-table ()
-  "Visit tags table"
-  (let ((tags-add-tables nil))
-    (visit-tags-table (mesa-tags-file) t)))
-
-(defun mesa-change-tags-table ()
-  "Change tags table"
+  "Visit/change tags table.  We can't use a local table because of long-standing bugs"
 
   ;; make TAGS file if it doesn't exist
   (if (not (file-exists-p (mesa-tags-file)))
       (mesa-regen-tags))
 
-  ;; this works, but I don't understand why it is necesary.  if I just
-  ;; used visit-tags-table, it would still always visit the old table,
-  ;; even though tags-file-name would have the right value...
-  (setq-local tags-table-list nil)
-  (add-to-list 'tags-table-list (mesa-tags-file))
-  (setq-local tags-file-name (mesa-tags-file)))
+  (let ((tags-add-tables nil))
+    (visit-tags-table (mesa-tags-file))))
 
 (defun mesa-regen-tags ()
   "Regenerate the tags file for the MESA defaults directory"
@@ -194,17 +126,6 @@
                                mesa-tags-file-path
                                (mapconcat 'identity mesa-defaults-files " ")))
       (message "Failed to generate TAGS: %s does not exist" default-directory))))
-
-(defun mesa-change-version ()
-  "Change the MESA version being used in this buffer"
-  (interactive)
-  (setq-local mesa-version
-                (completing-read
-                 "Select MESA Version: "
-                 (mesa-versions)
-                 nil t))
-  (setq-local mode-name (mesa-mode-name))
-  (mesa-change-tags-table))
 
 (defun mesa-toggle-boolean ()
   "Toggle an inlist flag between .true. <--> .false."
@@ -237,9 +158,6 @@ comment at the end of the line."
       (xref-find-definitions-other-window identifier)
       (recenter nil)
       (select-window window))))
-
-(defun mesa-mode-name ()
-  (format "MESA[%s]" mesa-version))
 
 (defcustom mesa-mode-before-save-hook nil
   "Hook to run before saving inlist"
@@ -431,13 +349,18 @@ mark is active, or of the line f the mark is inactive."
     (define-key map "\C-c\C-i" 'mesa-edit-index)
     (define-key map "\C-c\C-r" 'mesa-reset-to-default)
     (define-key map "\C-c\C-t" 'mesa-toggle-boolean)
-    (define-key map "\C-c\C-v" 'mesa-change-version)
     (define-key map "\M-." 'mesa-find-defintions)
     map)
   "Key map for `mesa-mode'.")
 
 
 (defun mesa-find-tag-default ()
+
+  ;; switch tags-table if needed
+  (unless (string= tags-file-name (mesa-tags-file))
+    (message "Swiching TAGS table")
+    (mesa-visit-tags-table))
+
   (save-excursion
     (beginning-of-line)
     (when (re-search-forward mesa-namelist-key-value-re (line-end-position) t)
@@ -476,6 +399,9 @@ mark is active, or of the line f the mark is inactive."
   :find-tag-default-function mesa-find-tag-default
   :group 'mesa
 
+  ;; specify mode name
+  (setq-local mode-name "MESA")
+
   ;; specify comment characters
   (setq-local comment-start "! ")
   (setq-local comment-start-skip "!+\\s-*")
@@ -486,24 +412,20 @@ mark is active, or of the line f the mark is inactive."
   ;; formatting controls
   (setq-local indent-tabs-mode nil)
 
-    ;; set local formatting choice to default
+  ;; set local formatting choice to default
   (setq-local mesa-mode-enforce-formatting mesa-mode-enforce-formatting-default)
 
-
+  ;; make sure we begin with no mesa-version set
+  (setq-local mesa-version-buffer nil)
 
   (progn
-    ;; set the MESA version
-    (setq-local mesa-version mesa-default-version)
-    (setq-local mode-name (mesa-mode-name))
 
-    ;; make TAGS file if it doesn't exist
-    (if (not (file-exists-p (mesa-tags-file)))
-        (mesa-regen-tags))
+    ;; activate mesa-version minor mode, except for .defaults files
+    (unless (string-match "\\.defaults$" (buffer-file-name))
+      (mesa-version-minor-mode 1))
 
-    ;; if TAGS does exist, visit it
-    (setq-local tags-file-name (mesa-tags-file))
-    (if (file-exists-p (mesa-tags-file))
-        (mesa-visit-tags-table)))
+    ;; visit the appropriate tags table
+    (mesa-visit-tags-table))
 
   ;; hooks
   (add-hook 'before-save-hook 'mesa-mode-before-save-hook nil t)
