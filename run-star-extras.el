@@ -118,30 +118,32 @@
   "names(\\([[:digit:]]+\\))"
   "Thing to look at to count extra columns")
 
-(defun rse~count-extra-history-columns ()
-  (rse~find-max-index-in-subroutine "data_for_extra_history_columns" rse-thing-to-count))
-
-(defun rse~count-extra-profile-columns ()
-  (rse~find-max-index-in-subroutine "data_for_extra_profile_columns" rse-thing-to-count))
+(defun rse~count-extra-columns (arg)
+  "Count in subroutine named data_for_extra_ARG_columns"
+  (let ((subroutine-name (format "data_for_extra_%s_columns" arg)))
+    (rse~find-max-index-in-subroutine subroutine-name rse-thing-to-count)))
 
 (defun rse~update-integer-variable (variable new-val)
   (save-excursion
     (goto-char (point-min))
     (while (re-search-forward (format "%s = \\([[:digit:]]+\\)" variable) (point-max) t)
       (unless (string= "" (match-string 1))
-        (replace-match (number-to-string new-val) nil nil nil 1)
-        (message "Replaced %s with %i" (match-string 1) new-val)))))
+        (replace-match (number-to-string new-val) nil nil nil 1)))))
 
-(defun rse~update-how-many-extra-history-columns ()
-  (rse~update-integer-variable "how_many_extra_history_columns" (rse~count-extra-history-columns)))
-
-(defun rse~update-how-many-extra-profile-columns ()
-  (rse~update-integer-variable "how_many_extra_profile_columns" (rse~count-extra-profile-columns)))
+(defun rse~update-how-many-extra-columns (arg)
+  "Update variable how_many_extra_ARG_columns"
+  (let ((variable-name (format "how_many_extra_%s_columns" arg))
+        (how-many (rse~count-extra-columns arg)))
+    (rse~update-integer-variable variable-name how-many)))
 
 (defun rse-before-save-hook ()
   (when rse-update-extra-column-counts
-    (rse~update-how-many-extra-history-columns)
-    (rse~update-how-many-extra-profile-columns)))
+    (let ((rse-file-type (file-name-nondirectory (buffer-file-name))))
+      (when (string= "run_star_extras.f" rse-file-type)
+        (rse~update-how-many-extra-columns "history")
+        (rse~update-how-many-extra-columns "profile"))
+      (when (string= "run_binary_extras.f" rse-file-type)
+        (rse~update-how-many-extra-columns "binary_history")))))
 
 (defun rse-compile-with-enviroment ()
   "Compile in an enviroment where MESA_DIR is from mesa-version"
