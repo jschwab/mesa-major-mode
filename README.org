@@ -1,69 +1,52 @@
 * mesa-major-mode
-This is an Emacs major mode intended for use with the inlists used by
-the [[http://mesa.sourceforge.net/][MESA stellar evolution code]].  It is descendant of (and replacement
-for) [[https://github.com/jschwab/mesa-minor-mode][mesa-minor-mode]].
+This is an Emacs major mode and some related minor-modes intended for
+use when editing the work directory files (inlists and
+run_star_extras.f) used by the [[http://mesa.sourceforge.net/][MESA stellar evolution code]].  It is
+descendant of (and replacement for) [[https://github.com/jschwab/mesa-minor-mode][mesa-minor-mode]].
 
-It provides syntax highlighting and strictly enforces formatting.
+It's key features are:
 
-Most importantly, it makes it easy to take advantage of the
-[[http://www.gnu.org/software/emacs/manual/html_node/emacs/Tags.html#Tags][tag-related features]] in Emacs while editing MESA inlists.  The default
-tag file will include everything in the star_job, controls, pgstar,
-binary_job, and binary_controls namelists.
++ For inlists
+  + syntax highlighting
+  + quick access to documentation with [[http://www.gnu.org/software/emacs/manual/html_node/emacs/Tags.html#Tags][xref/etags]]
+  + constrained editing
+  + automatic formatting
++ For run_star_extras
+  + easy "activation"
+  + automatic bookkeeping
 
-* Installation and Prerequisites
-** Install a recent version of emacs
-To use the major mode, you must have Emacs 25.1.  (Emacs 25 provides
-=xref-= functions that are superior the old =tags-= functions;
-mesa-mode is in the process of learning to use these.) If you are
-using emacs 24.X, there is an =emacs24= git tag marking where I broke
-backwards compatibility.
+For me at least, it significantly speeds up a number of common
+operations.
+
+* Prerequisites
+To use this software, you must have Emacs 25.1 or newer.  (In Emacs
+25, xref replaced etags's front-end and UI and I switched things over
+to xref.)  If you are using emacs 24.X, there is an =emacs24= git tag
+marking where I broke backwards compatibility.
 
 If you are using MESA on a remote system where only older emacs
 versions are available, you may want to consider running a newer
 version locally and editing your inlists using [[https://www.gnu.org/software/tramp/#Overview][TRAMP]].
-
-** List your installed MESA versions
-Create a file named =.mesa_init= in your home directory.  List the
-paths to your various MESA versions using [[http://en.wikipedia.org/wiki/INI_file][ini]] format, as below.
-
-#+BEGIN_EXAMPLE
-  [r7624]
-      MESA_DIR = /path/to/mesa-r7624
-
-  [r6596]
-      MESA_DIR = /path/to/mesa-r6596
-#+END_EXAMPLE
-
-You can have one or more of these entries.  If you have many MESA
-versions, you may want to take a look at [[https://github.com/jschwab/mesa-init][mesa-init]].
-
+* Installation
 ** Download mesa-mode
 The best way to get mesa-mode is to clone this repository
 #+BEGIN_EXAMPLE
   git clone https://github.com/jschwab/mesa-major-mode.git
 #+END_EXAMPLE
 
-If you don't want to use git, you can also save the [[https://raw.githubusercontent.com/jschwab/mesa-major-mode/master/mesa-mode.el][raw mesa-mode.el
-file]] to your computer.
+If you don't want to use git, you can also download a zipfile using
+the "Clone or download" button above.
 
-** Configure emacs 
-Make sure that mesa-mode.el is in your load-path and then require it
-in your Emacs init file.  Replace =/path/to/mesa-major-mode= with the
-path to the the folder where you placed the mesa-mode.el file.
+** Tell emacs to use the mode(s)
+Make sure that the .el files are in your load-path and then require
+them in your Emacs init file.  Replace =/path/to/mesa-major-mode= with
+the path to the the folder where you placed the mesa-mode.el file.
 
 #+BEGIN_EXAMPLE
   (add-to-list 'load-path "/path/to/mesa-major-mode/")
   (require 'mesa-mode)
+  (require 'run-star-extras)
 #+END_EXAMPLE
-
-You also want to specify the default version of MESA whose
-documentation you want to emacs to use.  Add
-#+BEGIN_EXAMPLE
-  ;; set default MESA version
-  (setq mesa-default-version "r7624")
-#+END_EXAMPLE
-where "r7624" is the identifier (that you specified earlier in
-=~.mesa_init=) of whatever version of MESA you want to be the default.
 
 You can have Emacs edit every file whose name starts with inlist using
 this major mode by adding
@@ -77,18 +60,82 @@ to get the syntax highlighting.  I also recommend using the read-only
 view-mode which will prevent you from confusing them with your inlists
 and editing them accidentally.
 #+BEGIN_EXAMPLE
-  (add-to-list 'auto-mode-alist '("\\.defaults\\'" . (lambda () (mesa-mode) (view-mode))))
+  (add-to-list 'auto-mode-alist '("\\.defaults$" . (lambda () (mesa-mode) (view-mode))))
+#+END_EXAMPLE
+
+For =run_star_extras.f= and =run_binary_extras.f= I recommend
+=f90-mode= and the run_star_extras minor mode.
+#+BEGIN_EXAMPLE
+  (add-to-list 'auto-mode-alist '("/run_star_extras.f$" . (lambda () (f90-mode) (run-star-extras-minor-mode))))
+  (add-to-list 'auto-mode-alist '("/run_binary_extras.f$" . (lambda () (f90-mode) (run-star-extras-minor-mode))))
 #+END_EXAMPLE
 
 There is an included =minimal_init.el= file that contains these
 commands.
+** Tell mesa-mode which MESA version(s) you want to use
+There are now three ways that you can tell mesa-mode about where MESA
+lives.  These are listed in order of reverse precedence.
 
-** Caveats
-I use this with the latest Emacs release on Linux, so that's where it
-is least likely to be broken.  I'm also not much of an elisp hacker,
-so you probably shouldn't take anything done here as representative of
-the "right way".
-* Features and Usage
+(The code that figures out and controls what version of MESA you're
+using has been abstracted into mesa-version.el.)
+
+*** Get MESA_DIR from your environment
+If you don't do anything, mesa-version will try to get the value of
+MESA_DIR using [[https://www.gnu.org/software/emacs/manual/html_node/elisp/System-Environment.html#index-getenv][getenv]].  Unless you've modified the value *within
+emacs* (via setenv), this is probably the value of MESA_DIR in the
+environment where you started emacs.
+
+If you only have one version of MESA installed and MESA_DIR is set
+when you start emacs, this is a good option.  The mode line will show
+=[MESA_DIR]= if this is how the version was set.
+
+*** Specify a single MESA_DIR in your emacs config
+If you set the variable =mesa-version-mesa-dir=, mesa-mode will use
+that path as the MESA_DIR.
+#+BEGIN_EXAMPLE
+(setq mesa-version-mesa-dir "/home/jschwab/Software/mesa-r8118")
+#+END_EXAMPLE
+
+If you only use one version of MESA, this is also a good option.  The
+mode line will show =[mesa-dir]= if this is how the version was set.
+
+*** Use mesa-init style version list (multiple MESA versions)
+
+If you have multiple MESA versions installed, you may want to take a
+look at [[https://github.com/jschwab/mesa-init][mesa-init]].  Whether or not use that software, you should use a
+mesa-init style version list to tell mesa-mode about all your MESA
+versions.
+
+Create a file named =.mesa_init= in your home directory.  List the
+paths to your various MESA versions using [[http://en.wikipedia.org/wiki/INI_file][ini]] format, as below.
+
+#+BEGIN_EXAMPLE
+  [r7624]
+      MESA_DIR = /path/to/mesa-r7624
+
+  [r8118]
+      MESA_DIR = /path/to/mesa-r8118
+#+END_EXAMPLE
+
+You can have one or more of these entries.
+
+You also want to specify the default version of MESA you want to emacs
+to use.  Add
+#+BEGIN_EXAMPLE
+  ;; set default MESA version
+  (setq mesa-version-default "r7624")
+#+END_EXAMPLE
+where "r7624" is the identifier (that you specified earlier in
+=~.mesa_init=) of whatever version of MESA you want to be the default.
+
+The mode line will show "[id]",  identifier (that you specified earlier in
+=~.mesa_init=) of whatever version of MESA you want to be the default.
+
+If you're using this option, you can use =C-c C-v= to change the MESA
+mode associated with the buffer you're visiting.  The MESA version is
+buffer-local, so different buffers can use different MESA versions.
+
+* Features and Usage (Inlists)
 ** Syntax highlighting
 This is one of the primary motivations for the major-mode.  The inlist
 will be syntax highlighted. By default, the following faces are used.
@@ -130,6 +177,12 @@ variable's definition in the appropriate .defaults file. =M-,= will
 jump you back to your place in the inlist.  Your completion command
 =M-/= will also be able to take advantage of tags.  To learn more
 about what tags are and what they can do, read the [[http://www.gnu.org/software/emacs/manual/html_node/emacs/Tags.html#Tags][Emacs docs]].
+
+The default tag file will include everything in the star_job,
+controls, pgstar, binary_job, and binary_controls namelists.  If a
+TAGS file doesn't exist when mesa-mode starts or the version changes,
+it will try and create one.  To regenerate the TAGS file (for example,
+after you upgrade MESA), use =M-x mesa-regen-tags=.
 
 ** Constrained editing
 The mode provides a number of commands that allow you to edit options
@@ -192,18 +245,40 @@ default, you can set
 #+BEGIN_EXAMPLE
   (setq mesa-mode-enforce-formatting-default t)
 #+END_EXAMPLE
+* Features and Usage (Fortran)
+** Easy "activation"
+In a brand-new =run_star_extras.f=, there's a line
+#+BEGIN_SRC f90
+  include 'standard_run_star_extras.inc'
+#+END_SRC
+that pulls in all the default functions.
 
-** MESA version management
-Each buffer is initially associated with the default MESA version, but
-if you want to switch versions, you can.  The MESA version is
-buffer-local, so different buffers can use different MESA versions.
-This affects which tags/defaults files will be used.
-*** Change MESA version
-If you specified multiple MESA versions in your =.mesa_init=, you can
-use =C-c C-v= to switch where the minor mode will look for the
-defaults files.
-*** (Re)generate tags file
-If a TAGS file doesn't exist when mesa-mode starts or the version
-changes, it will try and create one.  To regenerate the TAGS file (for
-example, after you upgrade MESA), use M-x mesa-regen-tags.
+The first step in starting a new run_star_extras is to replace this
+include statement with the code itself.  To do so, just press =C-c
+C-r=.
+** Automatic bookkeeping
+When I add an extra history or profile column, I always forget to
+update the number.  There's an a hook that will update the value of
+=how_many_extra_history_columns= or =how_many_extra_history_columns=
+each time to save.  Never forget to do this again.
 
+This feature is off by default.  To turn it on, add
+#+BEGIN_EXAMPLE
+(setq rse-update-extra-column-counts t)
+#+END_EXAMPLE
+to your configuration.
+** Automatic compilation (experimental)
+When you save your run_star_extras.f, you can have it automatically
+recompiled.
+
+This feature is off by default.  To turn it on, add
+#+BEGIN_EXAMPLE
+  (setq rse-recompile-on-save t)
+#+END_EXAMPLE
+to your configuration.
+
+* Caveats
+I use this with the latest Emacs release on Linux, so that's where it
+is least likely to be broken.  I'm also not much of an elisp hacker,
+so you probably shouldn't take anything done here as representative of
+the "right way".  Issues/Pull requests are welcome!
