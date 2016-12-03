@@ -19,10 +19,7 @@ For me at least, it significantly speeds up a number of common
 operations.
 
 * Prerequisites
-To use this software, you must have Emacs 25.1 or newer.  (In Emacs
-25, xref replaced etags's front-end and UI and I switched things over
-to xref.)  If you are using emacs 24.X, there is an [[https://github.com/jschwab/mesa-major-mode/tree/emacs24][emacs24 branch]]
-that should still be compatible.
+This branch should still be compatible with emacs 24.X.
 
 If you are using MESA on a remote system where only older emacs
 versions are available, you may want to consider running a newer
