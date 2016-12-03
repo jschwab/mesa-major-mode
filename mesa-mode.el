@@ -350,6 +350,7 @@ mark is active, or of the line f the mark is inactive."
     (define-key map "\C-c\C-r" 'mesa-reset-to-default)
     (define-key map "\C-c\C-t" 'mesa-toggle-boolean)
     (define-key map "\M-." 'mesa-find-defintions)
+    (define-key map "\M-," 'pop-tag-mark) ;; xref uses this binding
     map)
   "Key map for `mesa-mode'.")
 
@@ -367,29 +368,12 @@ mark is active, or of the line f the mark is inactive."
       (match-string-no-properties 1))))
 
 (defun mesa-find-defintions ()
-  "Wrapper for xref--find-definitions."
+  "Wrapper for find-tag."
   (interactive)
   (let ((identifier (mesa-find-tag-default)))
     (if identifier
-        (xref--find-definitions identifier nil)
+        (find-tag identifier)
       (message "No option on this line"))))
-
-;;;###autoload
-(defun mesa-mode-xref-backend ()
-  "Mesa-Mode backend for Xref."
-  'xref-mesa)
-
-(cl-defmethod xref-backend-identifier-at-point ((_backend (eql xref-mesa)))
-  (mesa-find-tag-default))
-
-(cl-defmethod xref-backend-identifier-completion-table ((_backend (eql xref-mesa)))
-  (tags-lazy-completion-table))
-
-(cl-defmethod xref-backend-definitions ((_backend (eql xref-mesa)) symbol)
-  (etags--xref-find-definitions symbol))
-
-(cl-defmethod xref-backend-apropos ((_backend (eql xref-mesa)) symbol)
-  (etags--xref-find-definitions symbol t))
 
 
 ;;;###autoload
@@ -429,7 +413,6 @@ mark is active, or of the line f the mark is inactive."
 
   ;; hooks
   (add-hook 'before-save-hook 'mesa-mode-before-save-hook nil t)
-  (add-hook 'xref-backend-functions #'mesa-mode-xref-backend nil t)
   (run-hooks 'mesa-mode-hook))
 
 (provide 'mesa-mode)
