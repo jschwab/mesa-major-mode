@@ -420,15 +420,19 @@ mark is active, or of the line f the mark is inactive."
 
   (progn
 
-    ;; activate mesa-version minor mode, except for .defaults files
+    ;; this stuff doesn't need to happen for .defaults files
     (unless (string-match "\\.defaults$" (buffer-file-name))
-      (mesa-version-minor-mode 1))
 
-    ;; visit the appropriate tags table
-    (mesa-visit-tags-table))
+      ;; activate mesa-version minor mode
+      (mesa-version-minor-mode 1)
+
+      ;; visit the appropriate tags table
+      (mesa-visit-tags-table)
+
+      ;; activate the pre-save hook
+      (add-hook 'before-save-hook 'mesa-mode-before-save-hook nil t)))
 
   ;; hooks
-  (add-hook 'before-save-hook 'mesa-mode-before-save-hook nil t)
   (add-hook 'xref-backend-functions #'mesa-mode-xref-backend nil t)
   (run-hooks 'mesa-mode-hook))
 
