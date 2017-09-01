@@ -4,7 +4,7 @@ use when editing the work directory files (inlists and
 run_star_extras.f) used by the [[http://mesa.sourceforge.net/][MESA stellar evolution code]].  It is
 descendant of (and replacement for) [[https://github.com/jschwab/mesa-minor-mode][mesa-minor-mode]].
 
-It's key features are:
+Its key features are:
 
 + For inlists
   + syntax highlighting
