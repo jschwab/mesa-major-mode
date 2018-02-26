@@ -115,7 +115,7 @@
 
 
 (defconst rse-thing-to-count
-  "names(\\([[:digit:]]+\\))"
+  "^[^!]+names(\\([[:digit:]]+\\))"
   "Thing to look at to count extra columns")
 
 (defun rse~count-extra-columns (arg)
