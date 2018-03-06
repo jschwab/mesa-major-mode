@@ -300,7 +300,7 @@ mark is active, or of the line f the mark is inactive."
    "\\([a-zA-Z0-9_]*\\)"                 ; key
    "(?\\([0-9,]?+\\))?"                  ; (indicies)?
    "[[:blank:]]*=[[:blank:]]*"           ; equals
-   "[\"\']?\\([a-zA-Z0-9_.-]*\\)[\"\']?" ; value
+   "[\"\']?\\([-+a-zA-Z0-9_.]*\\)[\"\']?"; value
    "[[:blank:]]*"                        ; trailing whitespace
    )
   "Regexp for matching namelist key-value pair")
@@ -314,7 +314,7 @@ mark is active, or of the line f the mark is inactive."
   "Regexp for matching namelist value (boolean)")
 
 (defvar mesa-namelist-value-number-re
-  "=[[:blank:]]*\\([0-9\\.eEdD-]+\\)[[:blank:]]*"
+  "=[[:blank:]]*\\([-+0-9\\.eEdD]+\\)[[:blank:]]*"
   "Regexp for matching namelist value (number)")
 
 (defconst mesa-font-lock-keywords
