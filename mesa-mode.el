@@ -281,6 +281,61 @@ mark is active, or of the line f the mark is inactive."
             (message "Bad tag"))
         (message "Line is not a key-value pair")))))
 
+
+(defun mesa~pgstar-list-plots ()
+  "List the known PGSTAR plots"
+  (let ((filename (mesa~prepend-mesa-dir "star/defaults/pgstar.defaults"))
+        (matches))
+    (save-match-data
+      (with-temp-buffer
+        (insert-file-contents filename)
+        (while (re-search-forward "\\([A-Za-z0-9_]+\\)_win_flag" nil t 1)
+          (push (match-string 1) matches))))
+    matches))
+
+
+(defun mesa~pgstar-insert-plot-lines-only (plot)
+  "Insert the PGSTAR options that start with PLOT"
+  (let ((filename (mesa~prepend-mesa-dir "star/defaults/pgstar.defaults"))
+        (plot-regexp (format "^[[:blank:]]*%s_" plot))
+        (plot-options))
+    (save-match-data
+      (with-temp-buffer
+        (insert-file-contents filename)
+        (while (re-search-forward plot-regexp nil t 1)
+          (push (thing-at-point 'line t) plot-options))))
+    (insert (mapconcat 'identity (reverse plot-options) ""))))
+
+
+(defun mesa~pgstar-insert-plot-entire-section (plot)
+  "Insert the PGSTAR options from the plot section"
+  (let ((filename (mesa~prepend-mesa-dir "star/defaults/pgstar.defaults"))
+        (plot-regexp (format "^[[:blank:]]*%s_win_flag" plot))
+        (beg)
+        (end)
+        (match))
+    (save-match-data
+      (with-temp-buffer
+        (insert-file-contents filename)
+        (re-search-forward plot-regexp nil t 1)
+        (beginning-of-line)
+        (setq beg (point))
+        (search-forward "!----" nil t 1)
+        (forward-line -1)
+        (setq end (point))
+        (setq match (buffer-substring beg end))))
+    (insert match)))
+
+
+(defun mesa-insert-pgstar-templates ()
+  "Insert pgstar template"
+  (interactive)
+  (when (string= (mesa-inside-namelist) "pgstar")
+    (setq pgstar-plot
+          (completing-read "Select plot: "(mesa~pgstar-list-plots) nil t))
+    (mesa~pgstar-insert-plot-entire-section pgstar-plot)))
+
+
 ;;; Syntax table
 (defvar mesa-mode-syntax-table
   (let ((st (make-syntax-table)))
@@ -348,6 +403,7 @@ mark is active, or of the line f the mark is inactive."
     (define-key map "\C-c\C-f" 'mesa-toggle-strict-formatting)
     (define-key map "\C-c\C-i" 'mesa-edit-index)
     (define-key map "\C-c\C-r" 'mesa-reset-to-default)
+    (define-key map "\C-c\C-p" 'mesa-insert-pgstar-templates)
     (define-key map "\C-c\C-t" 'mesa-toggle-boolean)
     (define-key map "\M-." 'mesa-find-defintions)
     map)

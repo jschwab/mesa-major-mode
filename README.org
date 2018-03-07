@@ -197,6 +197,7 @@ Here's a summary table.  More detail is below.
 | =C-c C-e= | Edit option value             |
 | =C-c C-f= | Toggle strict formatting      |
 | =C-c C-i= | Edit option index             |
+| =C-c C-p= | Insert PGSTAR plot template   |
 | =C-c C-r= | Reset option to default value |
 | =C-c C-t= | Toggle boolean value          |
 
@@ -214,6 +215,11 @@ entered in the minibuffer.  If no region is active, this replacement
 will occur on the current line.  If a region is active, this
 replacement will occur for all options in the region that have an
 index.
+*** Insert PGSTAR plot template
+When point is in the pgstar namelist, =C-c C-p= prompts the user from
+a list of PGSTAR plots.  When one is selected, that sub-section of the
+pgstar.defaults file is inserted at point.  This makes it easy to
+quickly start including a new plot.
 *** Reset option to default value
 =C-c C-r= will reset an option to its default value (i.e. the one
 specified in the MESA .defaults file).
