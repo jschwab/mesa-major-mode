@@ -68,7 +68,7 @@
   :group 'mesa)
 
 (defcustom mesa-tags-regexp
-  "'/^[ \\t]+\\([^ \\t!]+\\)[ \\t]*=/\\1/'"
+  "'/^[ \\t]+\\([^ \\t!()]+\\)\\(([:,1]+)\\)?[ \\t]*=/\\1/'"
   "Regexp to recognize tags in defaults files"
   :type 'regexp
   :group 'mesa
