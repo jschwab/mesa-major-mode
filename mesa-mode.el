@@ -82,7 +82,9 @@
 )
 
 (defconst mesa-defaults-files
-  '("star/defaults/star_job.defaults"
+  '("eos/defaults/eos.defaults"
+    "kap/defaults/kap.defaults"
+    "star/defaults/star_job.defaults"
     "star/defaults/controls.defaults"
     "star/defaults/pgstar.defaults"
     "binary/defaults/binary_job.defaults"
@@ -333,7 +335,7 @@ mark is active, or of the line f the mark is inactive."
   (when (string= (mesa-inside-namelist) "pgstar")
     (setq pgstar-plot
           (completing-read "Select plot: "(mesa~pgstar-list-plots) nil t))
-    (mesa~pgstar-insert-plot-entire-section pgstar-plot)))
+    (mesa~pgstar-insert-plot-lines-only pgstar-plot)))
 
 
 ;;; Syntax table
