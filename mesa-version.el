@@ -111,6 +111,9 @@ variable MESA_DIR."
    (mesa-version-mesa-dir "mesa-dir")
    (t "MESA_DIR")))
 
+(defvar mesa-version-change-hook nil
+  "Hook run after the MESA version is changed in a buffer.")
+
 (defun mesa-version-change ()
   "Change the MESA version being used in this buffer"
   (interactive)
@@ -118,7 +121,8 @@ variable MESA_DIR."
                 (completing-read
                  "Select MESA Version: "
                  (mesa-version-list-versions)
-                 nil t)))
+                 nil t))
+  (run-hooks 'mesa-version-change-hook))
 
 (defcustom mesa-version-mode-line
   '(:eval (format " [%s]" (mesa-version-for-lighter)))
